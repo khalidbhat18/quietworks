@@ -25,30 +25,45 @@
         }
 
         header {
-            padding: 25px 8%;
+            padding: 22px 8%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.45);
             position: sticky;
             top: 0;
             z-index: 10;
+            backdrop-filter: blur(10px);
         }
 
         .logo {
-            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 27px;
             font-weight: bold;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #7c3aed;
+            color: white;
+            border-radius: 12px;
         }
 
         nav a {
             color: #1e1b4b;
             text-decoration: none;
-            margin-left: 25px;
+            margin-left: 22px;
             font-weight: bold;
         }
 
         nav a:hover {
-            color: #7c3aed;
+            color: #ec4899;
         }
 
         .hero {
@@ -61,7 +76,7 @@
         }
 
         .hero-content {
-            max-width: 850px;
+            max-width: 900px;
             background: rgba(255, 255, 255, 0.82);
             padding: 70px 45px;
             border-radius: 30px;
@@ -94,6 +109,15 @@
             background: #ec4899;
         }
 
+        .visual {
+            margin: 35px auto 0;
+            width: 220px;
+            height: 140px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #f472b6, #8b5cf6, #22d3ee);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+        }
+
         .section {
             padding: 80px 8%;
             text-align: center;
@@ -119,7 +143,7 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.86);
             width: 280px;
             padding: 30px;
             border-radius: 20px;
@@ -129,6 +153,11 @@
 
         .card:hover {
             transform: translateY(-8px);
+        }
+
+        .card-icon {
+            font-size: 42px;
+            margin-bottom: 15px;
         }
 
         .card h3 {
@@ -143,7 +172,7 @@
         .contact-box {
             max-width: 700px;
             margin: auto;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.86);
             padding: 45px;
             border-radius: 25px;
         }
@@ -167,7 +196,7 @@
             }
 
             nav a {
-                margin: 0 8px;
+                margin: 0 7px;
             }
 
             .hero h1 {
@@ -188,7 +217,10 @@
 <body>
 
     <header>
-        <div class="logo">Quiet Works</div>
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            Quiet Works
+        </div>
 
         <nav>
             <a href="#home">Home</a>
@@ -201,49 +233,57 @@
 
     <section class="hero" id="home">
         <div class="hero-content">
+
             <h1>Welcome to Quiet Works</h1>
 
             <p>
                 Simple ideas. Creative work. Quiet impact.
-                We create thoughtful digital experiences designed
-                to turn ideas into something meaningful.
+                We create thoughtful digital experiences
+                designed to turn ideas into meaningful projects.
             </p>
 
-            <a href="#about" class="button">Discover More</a>
+            <a href="#services" class="button">Explore Quiet Works</a>
+
+            <div class="visual"></div>
+
         </div>
     </section>
 
 
     <section class="section" id="about">
+
         <h2>About Quiet Works</h2>
 
         <p class="section-intro">
             Quiet Works is a creative space focused on simple ideas,
-            clean design and meaningful digital projects. Our goal
-            is to make every project useful, beautiful and easy to understand.
+            clean design and meaningful digital projects.
+            We believe good work should be useful, beautiful and easy to understand.
         </p>
+
     </section>
 
 
     <section class="section" id="services">
+
         <h2>What We Do</h2>
 
         <p class="section-intro">
-            We focus on creative work that combines simplicity,
-            design and purpose.
+            Creative solutions built with simplicity and purpose.
         </p>
 
         <div class="cards">
 
             <div class="card">
+                <div class="card-icon">💡</div>
                 <h3>Creative Ideas</h3>
                 <p>
                     Turning simple thoughts into fresh and useful ideas
-                    that can grow into real projects.
+                    that can become real projects.
                 </p>
             </div>
 
             <div class="card">
+                <div class="card-icon">🎨</div>
                 <h3>Simple Design</h3>
                 <p>
                     Creating clean, colorful and easy-to-use digital
@@ -252,18 +292,21 @@
             </div>
 
             <div class="card">
+                <div class="card-icon">🚀</div>
                 <h3>Digital Projects</h3>
                 <p>
-                    Building websites and digital experiences that are
-                    practical, modern and meaningful.
+                    Building modern websites and digital experiences
+                    with purpose.
                 </p>
             </div>
 
         </div>
+
     </section>
 
 
     <section class="section" id="contact">
+
         <div class="contact-box">
 
             <h2>Let's Connect</h2>
@@ -278,6 +321,7 @@
             </a>
 
         </div>
+
     </section>
 
 
