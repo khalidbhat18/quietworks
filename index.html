@@ -1,40 +1,233 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Quiet works</title>
-  <style>
-    body {
-     font-family: arial, sans-serif;
-     text-align: center;
-     padding: 50px;
-     background: lightblue;
-     colour: darkblue;
-     font-size: 20px;
-     line-height: 1.6;
-     margin: 0;
-  }
-      h1 {
-          font-size:40px;
-  } 
-  button {
-    padding: 12px 24px;
-    font-size: 18px;
-    background: darkblue;
-    colour: white !important;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  }
-   button:hover {
-    background: navy;
-   }   
- </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Quiet Works</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #89f7fe, #66a6ff, #c471ed);
+            color: #1e1b4b;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 25px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: #1e1b4b;
+            text-decoration: none;
+            margin-left: 25px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #7c3aed;
+        }
+
+        .hero {
+            min-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .hero-content {
+            max-width: 850px;
+            background: rgba(255, 255, 255, 0.78);
+            padding: 70px 45px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .hero h1 {
+            font-size: 58px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 21px;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 32px;
+            background: #7c3aed;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            background: #ec4899;
+        }
+
+        .section {
+            padding: 70px 8%;
+            text-align: center;
+        }
+
+        .section h2 {
+            font-size: 38px;
+            margin-bottom: 35px;
+        }
+
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            width: 280px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        @media (max-width: 700px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav a {
+                margin: 0 8px;
+            }
+
+            .hero h1 {
+                font-size: 40px;
+            }
+
+            .hero-content {
+                padding: 45px 25px;
+            }
+        }
+    </style>
 </head>
+
 <body>
- <h1>welcome to quiet works</h1>
- <p>this is the offical quiet works website.</p>
-  <p>simple ideas. creative work. quiet works website.</p>
- <button>explore quiet works</button> 
+
+    <header>
+        <div class="logo">Quiet Works</div>
+
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Welcome to Quiet Works</h1>
+
+            <p>
+                Simple ideas. Creative work. Quiet impact.
+                A colorful space for creativity, thoughtful projects,
+                and meaningful work.
+            </p>
+
+            <a href="#about" class="button">Explore Quiet Works</a>
+        </div>
+    </section>
+
+
+    <section class="section" id="about">
+        <h2>What We Do</h2>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Creative Ideas</h3>
+                <p>
+                    We turn simple ideas into creative and useful projects.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Simple Design</h3>
+                <p>
+                    Clean, colorful and easy-to-use experiences.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Quiet Impact</h3>
+                <p>
+                    Meaningful work that focuses on quality and purpose.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+
+    <section class="section" id="contact">
+        <h2>Contact Quiet Works</h2>
+
+        <p>
+            Have an idea or project? We'd love to hear from you.
+        </p>
+
+        <br>
+
+        <a href="mailto:hello@quietworks.com" class="button">
+            Contact Us
+        </a>
+    </section>
+
+
+    <footer>
+        <p>© 2026 Quiet Works. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>
