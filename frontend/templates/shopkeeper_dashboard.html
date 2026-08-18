@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% block title %}LocalShop | Shopkeeper Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-shell">
+  <aside class="dashboard-nav card">
+    <h2>Shopkeeper</h2>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#products">Products</a>
+    <a href="#orders">Orders</a>
+    <a href="#settings">Shop Settings</a>
+  </aside>
+  <section class="dashboard-content">
+    <div id="dashboard" class="card">
+      <h2>Dashboard</h2>
+      <div id="shop-summary" class="stats-grid compact"></div>
+    </div>
+
+    <div id="products" class="card">
+      <h2>Products</h2>
+      <form id="product-form" class="product-form">
+        <input type="hidden" id="product-id">
+        <input type="text" id="product-name" placeholder="Product name" required>
+        <textarea id="product-description" placeholder="Description"></textarea>
+        <input type="text" id="product-category" placeholder="Category" value="General">
+        <input type="number" step="0.01" id="product-price" placeholder="Price" required>
+        <label><input type="checkbox" id="product-available" checked> Available</label>
+        <button type="submit" class="button primary">Save Product</button>
+      </form>
+      <div id="product-list" class="stack-list"></div>
+    </div>
+
+    <div id="orders" class="card">
+      <h2>Orders</h2>
+      <div id="order-list" class="stack-list"></div>
+    </div>
+
+    <div id="settings" class="card">
+      <h2>Shop Settings</h2>
+      <form id="shop-settings-form">
+        <input type="text" id="shop-name" placeholder="Shop name"><br>
+        <textarea id="shop-description" placeholder="Shop description"></textarea><br>
+        <input type="text" id="shop-address" placeholder="Address"><br>
+        <input type="text" id="shop-phone" placeholder="Phone"><br>
+        <input type="text" id="shop-hours" placeholder="Opening hours"><br>
+        <select id="shop-status">
+          <option value="Open">Open</option>
+          <option value="Closed">Closed</option>
+        </select><br>
+        <button type="submit" class="button primary">Save Shop</button>
+      </form>
+      <div class="qrcode-box">
+        <h3>QR Code</h3>
+        <img id="shop-qr" alt="Shop QR" src="">
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const shopkeeperState = { shop: null, products: [], orders: [] };
+
+  async function loadShopkeeperData() {
+    const shopResponse = await fetch('/api/shopkeeper/shop');
+    const shopData = await shopResponse.json();
+    if (!shopData.success) {
+      alert(shopData.message || 'No shop assigned');
+      return;
+    }
+    shopkeeperState.shop = shopData.shop;
+    document.getElementById('shop-name').value = shopData.shop.name;
+    document.getElementById('shop-description').value = shopData.shop.description;
+    document.getElementById('shop-address').value = shopData.shop.address;
+    document.getElementById('shop-phone').value = shopData.shop.phone;
+    document.getElementById('shop-hours').value = shopData.shop.opening_hours;
+    document.getElementById('shop-status').value = shopData.shop.status;
+    document.getElementById('shop-qr').src = `/qr/${shopData.shop.shop_code}`;
+    renderShopSummary();
+    loadProducts();
+    loadOrders();
+  }
+
+  async function loadProducts() {
+    const res = await fetch('/api/shopkeeper/products');
+    const data = await res.json();
+    shopkeeperState.products = data.products || [];
+    const list = document.getElementById('product-list');
+    list.innerHTML = shopkeeperState.products.map(product => `
+      <div class="product-item">
+        <div>
+          <strong>${product.name}</strong>
+          <div>₹${Number(product.price).toFixed(2)} • ${product.category}</div>
+          <div class="status-row">${product.is_available ? 'Available' : 'Unavailable'}</div>
+        </div>
+        <div class="button-group">
+          <button class="button small" data-edit-id="${product.id}">Edit</button>
+          <button class="button small danger" data-delete-id="${product.id}">Delete</button>
+          <button class="button small ${product.is_available ? 'secondary' : 'primary'}" data-toggle-id="${product.id}">${product.is_available ? 'Set Unavailable' : 'Set Available'}</button>
+        </div>
+      </div>
+    `).join('');
+    list.querySelectorAll('[data-edit-id]').forEach(btn => btn.addEventListener('click', () => populateProductForm(Number(btn.dataset.editId))));
+    list.querySelectorAll('[data-delete-id]').forEach(btn => btn.addEventListener('click', () => deleteProduct(Number(btn.dataset.deleteId))));
+    list.querySelectorAll('[data-toggle-id]').forEach(btn => btn.addEventListener('click', () => toggleAvailability(Number(btn.dataset.toggleId))));
+  }
+
+  async function loadOrders() {
+    const res = await fetch('/api/shopkeeper/orders');
+    const data = await res.json();
+    shopkeeperState.orders = data.orders || [];
+    const list = document.getElementById('order-list');
+    list.innerHTML = shopkeeperState.orders.map(order => `
+      <div class="order-item">
+        <div><strong>#${order.id}</strong> • ${order.customer_name}</div>
+        <div>${order.customer_phone}</div>
+        <div>${order.delivery_address}</div>
+        <div>Total: ₹${Number(order.total_amount).toFixed(2)}</div>
+        <div>Payment: ${order.payment_method}</div>
+        <div>Status: ${order.status}</div>
+        <select data-order-status-id="${order.id}">
+          <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option value="Accepted" ${order.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+          <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+          <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+          <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+          <option value="Rejected" ${order.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+        </select>
+      </div>
+    `).join('');
+    list.querySelectorAll('[data-order-status-id]').forEach(select => {
+      select.addEventListener('change', async function() {
+        const orderId = Number(select.dataset.orderStatusId);
+        await fetch(`/api/shopkeeper/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ status: select.value })
+        });
+        loadOrders();
+      });
+    });
+  }
+
+  function renderShopSummary() {
+    const container = document.getElementById('shop-summary');
+    container.innerHTML = `
+      <div class="card stat-box"><strong>${shopkeeperState.shop.name}</strong><span>${shopkeeperState.shop.status}</span></div>
+      <div class="card stat-box"><strong>Products</strong><span>${shopkeeperState.products.length}</span></div>
+      <div class="card stat-box"><strong>Orders</strong><span>${shopkeeperState.orders.length}</span></div>
+    `;
+  }
+
+  function populateProductForm(productId) {
+    const product = shopkeeperState.products.find(p => p.id === productId);
+    if (!product) return;
+    document.getElementById('product-id').value = product.id;
+    document.getElementById('product-name').value = product.name;
+    document.getElementById('product-description').value = product.description;
+    document.getElementById('product-category').value = product.category;
+    document.getElementById('product-price').value = product.price;
+    document.getElementById('product-available').checked = product.is_available;
+  }
+
+  document.getElementById('product-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const id = document.getElementById('product-id').value;
+    const payload = {
+      name: document.getElementById('product-name').value,
+      description: document.getElementById('product-description').value,
+      category: document.getElementById('product-category').value,
+      price: Number(document.getElementById('product-price').value),
+      is_available: document.getElementById('product-available').checked,
+    };
+    const url = id ? `/api/shopkeeper/products/${id}` : '/api/shopkeeper/products';
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      event.target.reset();
+      document.getElementById('product-id').value = '';
+      document.getElementById('product-available').checked = true;
+      loadProducts();
+      loadShopkeeperData();
+    } else {
+      alert(data.message || 'Unable to save product');
+    }
+  });
+
+  document.getElementById('shop-settings-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const payload = {
+      name: document.getElementById('shop-name').value,
+      description: document.getElementById('shop-description').value,
+      address: document.getElementById('shop-address').value,
+      phone: document.getElementById('shop-phone').value,
+      opening_hours: document.getElementById('shop-hours').value,
+      status: document.getElementById('shop-status').value,
+    };
+    const res = await fetch('/api/shopkeeper/shop', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.success) {
+      alert('Shop updated');
+      loadShopkeeperData();
+    } else {
+      alert(data.message || 'Shop update failed');
+    }
+  });
+
+  async function deleteProduct(productId) {
+    const res = await fetch(`/api/shopkeeper/products/${productId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      loadProducts();
+    }
+  }
+
+  async function toggleAvailability(productId) {
+    const product = shopkeeperState.products.find(p => p.id === productId);
+    if (!product) return;
+    const res = await fetch(`/api/shopkeeper/products/${productId}/availability`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ is_available: !product.is_available })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadProducts();
+    }
+  }
+
+  loadShopkeeperData();
+</script>
+{% endblock %}

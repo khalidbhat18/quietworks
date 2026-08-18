@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}LocalShop | Shop{% endblock %}
+{% block content %}
+{% if not shop %}
+<section class="card empty-state">
+  <h2>Shop not found</h2>
+  <p>{{ error }}</p>
+</section>
+{% else %}
+<section class="shop-header card">
+  <div class="shop-identity">
+    {% if shop.logo %}<img src="{{ shop.logo }}" alt="{{ shop.name }} logo" class="shop-logo">{% endif %}
+    <div>
+      <p class="eyebrow">Local Shop</p>
+      <h1>{{ shop.name }}</h1>
+      <p>{{ shop.description }}</p>
+    </div>
+  </div>
+  <div class="shop-meta">
+    <p><strong>Address:</strong> {{ shop.address }}</p>
+    <p><strong>Phone:</strong> {{ shop.phone }}</p>
+    <p><strong>Hours:</strong> {{ shop.opening_hours }}</p>
+    <p><strong>Shop Code:</strong> {{ shop.shop_code }}</p>
+  </div>
+</section>
+
+<section class="category-panel">
+  <h2>Categories</h2>
+  <div id="category-list" class="chip-row"></div>
+</section>
+
+<section class="shop-body">
+  <div class="products-panel">
+    <h2>Products</h2>
+    <div id="product-grid" class="product-grid"></div>
+  </div>
+  <aside class="cart-panel card">
+    <h2>Cart</h2>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="totals">
+      <div><span>Subtotal</span><strong id="subtotal">₹0.00</strong></div>
+      <div><span>Total</span><strong id="total">₹0.00</strong></div>
+    </div>
+    <a id="checkout-link" class="button primary wide" href="/checkout?shop_code={{ shop.shop_code }}">Proceed to Checkout</a>
+  </aside>
+</section>
+{% endif %}
+
+<script>
+  const shopCode = '{{ shop.shop_code if shop else '' }}';
+  const apiUrl = `/api/shops/${shopCode}/products`;
+  const state = { products: [], cart: [] };
+
+  async function fetchProducts() {
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    if (data.success) {
+      state.products = data.products;
+      renderCategoryFilters();
+      renderProducts();
+      renderCart();
+    }
+  }
+
+  function renderCategoryFilters() {
+    const categories = ['All', ...new Set(state.products.map(p => p.category))];
+    const chips = document.getElementById('category-list');
+    chips.innerHTML = categories.map(cat => `<button class="chip ${cat === 'All' ? 'active' : ''}" data-category="${cat}">${cat}</button>`).join('');
+    chips.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+      chips.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b === btn));
+      renderProducts(btn.dataset.category);
+    }));
+  }
+
+  function renderProducts(category = 'All') {
+    const grid = document.getElementById('product-grid');
+    const filtered = category === 'All' ? state.products : state.products.filter(p => p.category === category);
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty-state card"><p>No products available in this category.</p></div>';
+      return;
+    }
+    grid.innerHTML = filtered.map(product => `
+      <article class="product-card ${product.is_available ? '' : 'unavailable'}">
+        <img src="${product.image || '/static/images/default-product.svg'}" alt="${product.name}">
+        <div class="product-content">
+          <div class="product-topline">
+            <span class="category-tag">${product.category}</span>
+            <span class="status-badge ${product.is_available ? 'available' : 'unavailable'}">${product.is_available ? 'Available' : 'Out of Stock'}</span>
+          </div>
+          <h3>${product.name}</h3>
+          <p>${product.description || 'No description available.'}</p>
+          <div class="price-row">
+            <strong>₹${Number(product.price).toFixed(2)}</strong>
+            <button class="button primary small" ${product.is_available ? '' : 'disabled'} data-product-id="${product.id}">Add to cart</button>
+          </div>
+        </div>
+      </article>
+    `).join('');
+    grid.querySelectorAll('[data-product-id]').forEach(btn => btn.addEventListener('click', () => addToCart(Number(btn.dataset.productId))));
+  }
+
+  function addToCart(productId) {
+    const product = state.products.find(p => p.id === productId);
+    if (!product || !product.is_available) {
+      return;
+    }
+    const existing = state.cart.find(item => item.id === productId);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      state.cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
+    }
+    renderCart();
+  }
+
+  function changeQuantity(productId, delta) {
+    const item = state.cart.find(p => p.id === productId);
+    if (!item) return;
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+      state.cart = state.cart.filter(p => p.id !== productId);
+    }
+    renderCart();
+  }
+
+  function renderCart() {
+    const cartItems = document.getElementById('cart-items');
+    if (!state.cart.length) {
+      cartItems.innerHTML = '<p class="muted">Your cart is empty.</p>';
+      document.getElementById('subtotal').textContent = '₹0.00';
+      document.getElementById('total').textContent = '₹0.00';
+      return;
+    }
+    const subtotal = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    cartItems.innerHTML = state.cart.map(item => `
+      <div class="cart-item">
+        <div>
+          <strong>${item.name}</strong>
+          <div class="amount">₹${Number(item.price).toFixed(2)} each</div>
+        </div>
+        <div class="qty-box">
+          <button data-action="decrease" data-id="${item.id}">-</button>
+          <span>${item.quantity}</span>
+          <button data-action="increase" data-id="${item.id}">+</button>
+        </div>
+      </div>
+    `).join('');
+    cartItems.querySelectorAll('[data-action]').forEach(btn => {
+      const id = Number(btn.dataset.id);
+      const delta = btn.dataset.action === 'increase' ? 1 : -1;
+      btn.addEventListener('click', () => changeQuantity(id, delta));
+    });
+    document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('total').textContent = `₹${subtotal.toFixed(2)}`;
+    const checkoutLink = document.getElementById('checkout-link');
+    checkoutLink.href = `/checkout?shop_code=${shopCode}&items=${encodeURIComponent(JSON.stringify(state.cart))}`;
+  }
+
+  fetchProducts();
+</script>
+{% endblock %}

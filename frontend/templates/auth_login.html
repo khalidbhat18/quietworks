@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}LocalShop | Login{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="card auth-card">
+    <p class="eyebrow">Secure login</p>
+    <h2>Welcome back</h2>
+    {% if error %}<p class="error-box">{{ error }}</p>{% endif %}
+    <form id="login-form">
+      <label>
+        Email
+        <input type="email" id="email" name="email" required>
+      </label>
+      <label>
+        Password
+        <input type="password" id="password" name="password" required>
+      </label>
+      <button type="submit" class="button primary wide">Login</button>
+    </form>
+    <div class="demo-credentials">
+      <p>Demo admin: admin@localshop.test / admin123</p>
+      <p>Demo shopkeeper: shopkeeper@localshop.test / shop123</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect;
+    } else {
+      alert(data.message || 'Login failed');
+    }
+  });
+</script>
+{% endblock %}

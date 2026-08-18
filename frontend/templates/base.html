@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}LocalShop{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand">LocalShop</div>
+        <nav>
+          {% if current_user %}
+            <a href="/">Home</a>
+            {% if current_user.role == 'ADMIN' %}
+              <a href="/admin/dashboard">Admin</a>
+            {% elif current_user.role == 'SHOPKEEPER' %}
+              <a href="/shopkeeper/dashboard">Shopkeeper</a>
+            {% endif %}
+            <button id="logout-btn" class="secondary small">Logout</button>
+          {% else %}
+            <a href="/login">Login</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <main class="container page-shell">
+      {% block content %}{% endblock %}
+    </main>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', async function() {
+            const res = await fetch('/api/auth/logout', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+              window.location.href = '/login';
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

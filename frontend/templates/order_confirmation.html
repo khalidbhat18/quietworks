@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}LocalShop | Order Confirmed{% endblock %}
+{% block content %}
+<section class="card thank-you-box">
+  <h1>Order placed successfully</h1>
+  <p><strong>Order ID:</strong> #{{ order.id }}</p>
+  <p><strong>Shop:</strong> {{ order.shop_name }}</p>
+  <p><strong>Status:</strong> {{ order.status }}</p>
+  <p><strong>Payment:</strong> {{ order.payment_method }}</p>
+  <p><strong>Total:</strong> ₹{{ '%.2f'|format(order.total_amount) }}</p>
+
+  <div class="card nested">
+    <h2>Ordered items</h2>
+    <ul>
+      {% for item in order['items'] %}
+      <li>{{ item.product_name_snapshot }} x {{ item.quantity }} = ₹{{ '%.2f'|format(item.subtotal) }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <a class="button primary" href="/shop/{{ order.shop_code }}">Back to shop</a>
+</section>
+{% endblock %}

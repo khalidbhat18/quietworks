@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+instance/
+*.db
+*.sqlite3
+.pytest_cache/
+frontend/static/qr/*.png
+uploads/*
+.DS_Store
+static/qr/*.png

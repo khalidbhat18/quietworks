@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}LocalShop | Admin Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-shell admin-shell">
+  <aside class="dashboard-nav card">
+    <h2>Admin</h2>
+    <a href="#stats">Dashboard</a>
+    <a href="#shops">Shops</a>
+    <a href="#shopkeepers">Shopkeepers</a>
+    <a href="#products">Products</a>
+    <a href="#orders">Orders</a>
+  </aside>
+  <section class="dashboard-content">
+    <div id="stats" class="card">
+      <h2>Statistics</h2>
+      <div id="stats-grid" class="stats-grid compact"></div>
+    </div>
+
+    <div id="shops" class="card">
+      <h2>Shops</h2>
+      <form id="shop-form" class="stacked-form">
+        <input type="text" id="admin-shop-name" placeholder="Shop name" required>
+        <input type="text" id="admin-shop-code" placeholder="Shop code (optional)">
+        <button class="button primary" type="submit">Create shop</button>
+      </form>
+      <div id="shop-list" class="stack-list"></div>
+    </div>
+
+    <div id="shopkeepers" class="card">
+      <h2>Shopkeepers</h2>
+      <form id="shopkeeper-form" class="stacked-form">
+        <input type="text" id="sk-name" placeholder="Name" required>
+        <input type="email" id="sk-email" placeholder="Email" required>
+        <input type="text" id="sk-phone" placeholder="Phone">
+        <input type="password" id="sk-password" placeholder="Password" required>
+        <select id="sk-shop-id"></select>
+        <button class="button primary" type="submit">Create shopkeeper</button>
+      </form>
+      <div id="shopkeeper-list" class="stack-list"></div>
+    </div>
+
+    <div id="products" class="card">
+      <h2>Products</h2>
+      <div id="all-products-list" class="stack-list"></div>
+    </div>
+
+    <div id="orders" class="card">
+      <h2>Orders</h2>
+      <div id="all-orders-list" class="stack-list"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  async function loadAdminData() {
+    await loadStats();
+    await loadShops();
+    await loadShopkeepers();
+    await loadAllProducts();
+    await loadAllOrders();
+  }
+
+  async function loadStats() {
+    const res = await fetch('/api/admin/stats');
+    const data = await res.json();
+    const stats = data.stats || {};
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="card stat-box"><strong>Total shops</strong><span>${stats.total_shops}</span></div>
+      <div class="card stat-box"><strong>Active shops</strong><span>${stats.active_shops}</span></div>
+      <div class="card stat-box"><strong>Total products</strong><span>${stats.total_products}</span></div>
+      <div class="card stat-box"><strong>Total orders</strong><span>${stats.total_orders}</span></div>
+      <div class="card stat-box"><strong>Pending</strong><span>${stats.pending_orders}</span></div>
+      <div class="card stat-box"><strong>Delivered</strong><span>${stats.delivered_orders}</span></div>
+    `;
+  }
+
+  async function loadShops() {
+    const res = await fetch('/api/admin/shops');
+    const data = await res.json();
+    const select = document.getElementById('sk-shop-id');
+    const list = document.getElementById('shop-list');
+    const shops = data.shops || [];
+    select.innerHTML = shops.map(shop => `<option value="${shop.id}">${shop.name} (${shop.shop_code})</option>`).join('');
+    list.innerHTML = shops.map(shop => `<div class="shop-item"><strong>${shop.name}</strong><span>${shop.shop_code}</span><span>${shop.status}</span></div>`).join('');
+  }
+
+  async function loadShopkeepers() {
+    const res = await fetch('/api/admin/shopkeepers');
+    const data = await res.json();
+    const list = document.getElementById('shopkeeper-list');
+    list.innerHTML = (data.shopkeepers || []).map(user => `<div class="shop-item"><strong>${user.name}</strong><span>${user.email}</span><span>${(user.shop_names || []).join(', ') || 'No shop assigned'}</span></div>`).join('');
+  }
+
+  async function loadAllProducts() {
+    const res = await fetch('/api/admin/products');
+    const data = await res.json();
+    const list = document.getElementById('all-products-list');
+    list.innerHTML = (data.products || []).map(product => `<div class="product-item"><strong>${product.name}</strong><span>₹${Number(product.price).toFixed(2)}</span><span>${product.is_available ? 'Available' : 'Unavailable'}</span></div>`).join('');
+  }
+
+  async function loadAllOrders() {
+    const res = await fetch('/api/admin/orders');
+    const data = await res.json();
+    const list = document.getElementById('all-orders-list');
+    list.innerHTML = (data.orders || []).map(order => `<div class="order-item"><strong>#${order.id}</strong><span>${order.customer_name}</span><span>₹${Number(order.total_amount).toFixed(2)}</span><span>${order.status}</span></div>`).join('');
+  }
+
+  document.getElementById('shop-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const payload = {
+      name: document.getElementById('admin-shop-name').value,
+      shop_code: document.getElementById('admin-shop-code').value,
+    };
+    const res = await fetch('/api/admin/shops', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      event.target.reset();
+      loadAdminData();
+    } else {
+      alert(data.message || 'Unable to create shop');
+    }
+  });
+
+  document.getElementById('shopkeeper-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const payload = {
+      name: document.getElementById('sk-name').value,
+      email: document.getElementById('sk-email').value,
+      phone: document.getElementById('sk-phone').value,
+      password: document.getElementById('sk-password').value,
+      shop_id: document.getElementById('sk-shop-id').value,
+    };
+    const res = await fetch('/api/admin/shopkeepers', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      event.target.reset();
+      loadAdminData();
+    } else {
+      alert(data.message || 'Unable to create shopkeeper');
+    }
+  });
+
+  loadAdminData();
+</script>
+{% endblock %}

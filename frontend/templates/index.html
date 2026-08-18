@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}LocalShop | Home{% endblock %}
+{% block content %}
+<section class="hero card">
+  <div>
+    <p class="eyebrow">Multi-shop local ordering</p>
+    <h1>Order from nearby shops in minutes</h1>
+    <p>Scan a shop QR code or visit a public shop page to browse products, add to cart and place a COD order.</p>
+    <div class="inline-actions">
+      <a class="button primary" href="/shop/DEMO001">Open Demo Shop</a>
+      <a class="button outline" href="/login">Shopkeeper Login</a>
+    </div>
+  </div>
+</section>
+
+<section class="stats-grid">
+  <div class="card stat-box">
+    <strong>Demo Shop</strong>
+    <span>DEMO001</span>
+  </div>
+  <div class="card stat-box">
+    <strong>Payment</strong>
+    <span>Cash on Delivery</span>
+  </div>
+  <div class="card stat-box">
+    <strong>Roles</strong>
+    <span>Customer / Shopkeeper / Admin</span>
+  </div>
+</section>
+{% endblock %}
